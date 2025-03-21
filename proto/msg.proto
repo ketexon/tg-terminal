@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+option go_package = "ketexon/tg/proto";
+
+message Test {
+	string test = 1;
+}
