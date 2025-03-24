@@ -15,8 +15,6 @@ import (
 )
 
 func main() {
-
-	return
 	logPath := "log.txt"
 	logFile, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
