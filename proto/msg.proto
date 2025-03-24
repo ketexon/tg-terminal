@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+option go_package = "ketexon/tg/pb";
+
+message Test {
+	string test = 1;
+}
+
+message PlayAudio {
+	string clip = 1;
+}
+
+message OpenDoor {}
+
+message TerminalMessage {
+	oneof Content {
+		PlayAudio play_audio = 1;
+		OpenDoor open_door = 2;
+		Ping ping = 3;
+		Error error = 4;
+	}
+}
+
+message Login {
+	string computer_id = 1;
+}
+
+message Error {
+	string message = 1;
+}
+
+message Ping {
+	int64 timestamp = 1;
+}
+
+message GameMessage {
+	oneof Content {
+		Login login = 1;
+		Ping ping = 2;
+	}
+}
