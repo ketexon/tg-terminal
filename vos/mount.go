@@ -2,20 +2,19 @@ package vos
 
 import (
 	"archive/tar"
-	"fmt"
 	"io"
 	"log/slog"
 	"os"
+	"path"
 
 	"github.com/spf13/afero"
 )
 
-func MountTar(tarPath string) afero.Fs {
+func MountTar(tarPath string) (afero.Fs, error) {
 	// try open tarPath
 	f, err := os.Open(tarPath)
 	if err != nil {
-		slog.Error("failed to open tar file", "path", tarPath, "error", err)
-		panic(err)
+		return nil, err
 	}
 	defer f.Close()
 	tr := tar.NewReader(f)
@@ -33,11 +32,24 @@ func MountTar(tarPath string) afero.Fs {
 			slog.Error("failed to read tar entry", "error", err)
 		}
 
-		fmt.Printf("Contents of %s\n", header.Name)
-		if _, err := io.Copy(os.Stdout, tr); err != nil {
-			slog.Error("failed to copy tar entry", "error", err)
+		name := path.Clean(path.Join("/", header.Name))
+		mode := os.FileMode(header.Mode)
+
+		switch header.Typeflag {
+		case tar.TypeDir:
+			if err := fs.MkdirAll(name, mode); err != nil {
+				return nil, err
+			}
+		case tar.TypeReg:
+			file, err := fs.OpenFile(name, os.O_CREATE|os.O_WRONLY, mode)
+			if err != nil {
+				return nil, err
+			}
+			defer file.Close()
+			if _, err := io.Copy(file, tr); err != nil {
+				return nil, err
+			}
 		}
-		fmt.Println()
 	}
-	return fs
+	return fs, nil
 }
